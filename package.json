@@ -16,7 +16,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/codeperate/utils.git"
+        "url": "git+https://github.com/codeperate/mutable.git"
     },
     "keywords": [
         "Codeperate",
@@ -26,7 +26,7 @@
     "author": "Codeperate Limited",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/codeperate/utils/issues"
+        "url": "https://github.com/codeperate/mutable/issues"
     },
     "homepage": "https://www.codeperate.com",
     "devDependencies": {
