@@ -1,4 +1,4 @@
-import { applyMutation, deleteValue, Mutable } from '..';
+import { applyMutation, deleteValue } from '../index';
 
 test('applyMutation', () => {
     // Define the object to mutate
