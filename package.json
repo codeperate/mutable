@@ -3,10 +3,9 @@
     "version": "1.0.1",
     "description": "A small library that provide utility tools.",
     "main": "dist/index.js",
-    "types": "types/index.d.ts",
+    "types": "dist/index.d.ts",
     "files": [
-        "dist/",
-        "types"
+        "dist"
     ],
     "scripts": {
         "build": "del-cli dist && tsc -p tsconfig.build.json",
