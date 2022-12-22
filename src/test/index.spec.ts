@@ -1,4 +1,4 @@
-import { applyMutation, deleteValue } from '..';
+import { applyMutation, deleteValue, Mutable } from '..';
 
 test('applyMutation', () => {
     // Define the object to mutate
@@ -78,4 +78,58 @@ test('applyMutation', () => {
 
     // Apply the mutation to the object and compare the result to the expected output
     expect(applyMutation(['condition1', 'condition2'], obj)).toEqual(expected);
+});
+describe('applyMutation', () => {
+    it('should apply the specified mutations to the object', () => {
+        const obj = {
+            a: 1,
+            b: 'hello',
+            c: true,
+            mutate: {
+                condition1: {
+                    a: 2,
+                    //b: deleteValue,
+                },
+                condition2: {
+                    b: (val) => val.toUpperCase(),
+                    c: false,
+                },
+            },
+        };
+
+        const result = applyMutation(['condition1', 'condition2'], obj);
+
+        expect(result).toEqual({
+            a: 2,
+            b: 'HELLO',
+            c: false,
+        });
+    });
+});
+
+describe('applyMutation', () => {
+    it('should apply the specified mutations to the object', () => {
+        const obj = {
+            a: 1,
+            b: 'hello',
+            c: true,
+            mutate: {
+                condition1: {
+                    a: 2,
+                },
+                condition2: {
+                    b: (val) => val.toUpperCase(),
+                    c: false,
+                },
+            },
+        };
+
+        const result = applyMutation(['condition1', 'condition2'], obj);
+
+        expect(result).toEqual({
+            a: 2,
+            b: 'HELLO',
+            c: false,
+        });
+    });
 });
