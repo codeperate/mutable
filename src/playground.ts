@@ -14,4 +14,3 @@ let obj = {
     },
 };
 let result = applyMutation(['test'], obj);
-console.log(JSON.stringify(result, null, 2));
