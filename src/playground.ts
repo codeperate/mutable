@@ -1,14 +1,17 @@
-import { applyMutation } from './';
+import { applyMutation } from './index';
 let obj = {
     object: {
         type: 'object',
         properties: {
             a: {
                 type: 'string',
+                mutate: {
+                    test: { type: 'number' },
+                },
             },
         },
         required: ['a'],
     },
-} as any;
+};
 let result = applyMutation(['test'], obj);
 console.log(JSON.stringify(result, null, 2));
