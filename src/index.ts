@@ -16,7 +16,15 @@ export type Mutated<T extends object, K = any> = {
 };
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
-export function applyMutation<T extends Mutable<NonMutable<T>>>(conditions: MutableCondition[], obj: T) {
+export function applyMutation<T extends Mutable<NonMutable<T>>>(
+    conditions: MutableCondition[],
+    obj: T,
+    option: {
+        keepMutation?: boolean;
+    } = {},
+) {
+    const defaultOption = { keepMutation: false };
+    Object.assign(option, defaultOption);
     // Create the `deleteValue` symbol
 
     // Start with a shallow copy of the original object
@@ -54,12 +62,13 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(conditions: Muta
     }
 
     // Remove any remaining `mutate` properties from the result
-    for (const [key, value] of Object.entries(result)) {
-        if (key === 'mutate') {
-            delete result[key];
+    if (!option.keepMutation) {
+        for (const [key, value] of Object.entries(result)) {
+            if (key === 'mutate') {
+                delete result[key];
+            }
         }
     }
-
     // Return the result
     return result;
 }
