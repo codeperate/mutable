@@ -133,3 +133,37 @@ describe('applyMutation', () => {
         });
     });
 });
+
+describe('keepMutation', () => {
+    it('should apply the specified mutations to the object', () => {
+        const obj = {
+            a: 1,
+            b: 'hello',
+            c: true,
+            mutate: {
+                condition1: {
+                    a: 2,
+                },
+                condition2: {
+                    c: false,
+                },
+            },
+        };
+
+        const result = applyMutation(['condition1', 'condition2'], obj, { keepMutation: true });
+
+        expect(result).toEqual({
+            a: 2,
+            b: 'hello',
+            c: false,
+            mutate: {
+                condition1: {
+                    a: 2,
+                },
+                condition2: {
+                    c: false,
+                },
+            },
+        });
+    });
+});

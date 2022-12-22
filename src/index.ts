@@ -24,7 +24,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     } = {},
 ) {
     const defaultOption = { keepMutation: false };
-    Object.assign(option, defaultOption);
+    Object.assign(defaultOption, option);
     // Create the `deleteValue` symbol
 
     // Start with a shallow copy of the original object
@@ -34,7 +34,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     // whether or not they have a `mutate` property
     for (const [key, value] of Object.entries(result)) {
         if (value && typeof value == 'object' && Array.isArray(value) == false) {
-            result[key] = applyMutation(conditions, value as any);
+            result[key] = applyMutation(conditions, value as any, option);
         }
     }
 
