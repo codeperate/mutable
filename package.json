@@ -11,7 +11,8 @@
         "build": "del-cli dist && tsc -p tsconfig.build.json",
         "release": "pnpm run build && np --no-cleanup",
         "test": "jest",
-        "develop:test": "jest --watchAll"
+        "develop:test": "jest --watchAll",
+        "playground": "ts-node src/playground.ts"
     },
     "repository": {
         "type": "git",

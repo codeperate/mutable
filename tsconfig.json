@@ -1,8 +1,13 @@
 {
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs"
+        }
+    },
     "compilerOptions": {
         "outDir": "dist",
         "module": "ESNext",
-        "target": "es2017",
+        "target": "ESNext",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "strict": false,

@@ -25,7 +25,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(conditions: Muta
     // Recursively apply the mutation to all properties of the object, regardless of
     // whether or not they have a `mutate` property
     for (const [key, value] of Object.entries(obj)) {
-        if (value && typeof value == 'object') {
+        if (value && typeof value == 'object' && Array.isArray(value) == false) {
             result[key] = applyMutation(conditions, value);
         }
     }
