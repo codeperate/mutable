@@ -24,6 +24,8 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     obj: T,
     option: {
         keepMutation?: boolean;
+        parent?: any;
+        key?: any;
     } = {},
 ) {
     const defaultOption = { keepMutation: false };
@@ -37,7 +39,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     // whether or not they have a `mutate` property
     for (const [key, value] of Object.entries(result)) {
         if (value && typeof value == 'object' && Array.isArray(value) == false) {
-            result[key] = applyMutation(conditions, value as any, option);
+            result[key] = applyMutation(conditions, value as any, { ...option, parent: result, key: key });
         }
     }
 
@@ -51,7 +53,8 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
             args = condition.args();
         } else conditionKey = condition;
         const mutation = obj.mutate?.[conditionKey];
-        if (mutation) {
+        if (mutation === deleteValue && option.parent) delete option.parent[option.key];
+        else if (mutation) {
             for (const [key, value] of Object.entries(mutation)) {
                 if (value === deleteValue) {
                     delete result[key];
