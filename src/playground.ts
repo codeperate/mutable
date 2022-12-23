@@ -1,7 +1,11 @@
 import { applyMutation, deleteValue } from './index';
 let obj = {
     properties: {
-        name: {},
+        name: {
+            mutate: {
+                edit: deleteValue,
+            },
+        },
         number: {
             items: {
                 config: {},
