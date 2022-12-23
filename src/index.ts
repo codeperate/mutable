@@ -11,9 +11,12 @@ export type NonMutable<T extends object> = {
 export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? (T[Key] extends Function ? T[Key] : Mutable<T[Key], K>) : T[Key] } & {
     mutate?: { [key: string]: DeepPartial<Mutated<T, K>> };
 };
-export type Mutated<T extends object, K = any> = {
-    [Key in keyof T]: (T[Key] extends object ? Mutated<T[Key]> : T[Key]) | ((this: K, obj: T, ...args: any) => T) | symbol;
-};
+export type Mutated<T extends object, K = any> =
+    | {
+          [Key in keyof T]: T[Key] extends object ? Mutated<T[Key]> : T[Key] | ((this: K, obj: T, ...args: any) => T) | symbol;
+      }
+    | ((this: K, obj: T, ...args: any) => T)
+    | symbol;
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
 export function applyMutation<T extends Mutable<NonMutable<T>>>(
