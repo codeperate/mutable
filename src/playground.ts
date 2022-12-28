@@ -3,7 +3,7 @@ let obj = {
     properties: {
         name: {
             mutate: {
-                edit: deleteValue,
+                edit: () => ({ label: 'Name' }),
             },
         },
         number: {
