@@ -51,7 +51,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
             conditionKey = condition.condition;
             args = condition.args();
         } else conditionKey = condition;
-        const mutation = obj.mutate?.[conditionKey];
+        const mutation = obj?.mutate?.[conditionKey];
         if (mutation === deleteValue) return deleteValue;
         else if (mutation) {
             for (const [key, value] of Object.entries(mutation)) {
