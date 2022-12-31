@@ -1,28 +1,17 @@
 import { applyMutation, deleteValue } from './index';
-let obj = {
-    properties: {
-        name: {
-            mutate: {
-                edit: () => ({ label: 'Name' }),
-            },
-        },
-        number: {
-            items: {
-                config: {},
-            },
-        },
-        test: {
-            config: {
-                entity: 'test',
-            },
-        },
-        tests: {
-            config: {
-                entity: 'test',
-                multi: true,
-            },
-        },
+
+const obj = {
+    a: 1,
+    b: 2,
+    c: 3,
+    mutate: {
+        condition1: { b: 4 },
+        condition2: { c: deleteValue },
     },
 };
-let result = applyMutation(['edit'], obj as any);
-console.log(JSON.stringify(result, null, 2));
+
+// Calculate the expected mutation result
+const expected = { a: 1, b: 4 };
+
+const _obj = applyMutation(['condition1', 'condition2'], obj);
+console.log(_obj);

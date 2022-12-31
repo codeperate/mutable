@@ -90,19 +90,16 @@ describe('applyMutation', () => {
                     a: 2,
                     //b: deleteValue,
                 },
-                condition2: {
-                    b: (val) => val.toUpperCase(),
-                    c: false,
-                },
+                condition2: (val) => ({
+                    b: 'hello',
+                }),
             },
         };
 
         const result = applyMutation(['condition1', 'condition2'], obj);
 
         expect(result).toEqual({
-            a: 2,
-            b: 'HELLO',
-            c: false,
+            b: 'hello',
         });
     });
 });
@@ -118,7 +115,7 @@ describe('applyMutation', () => {
                     a: 2,
                 },
                 condition2: {
-                    b: (val) => val.toUpperCase(),
+                    b: 'asd',
                     c: false,
                 },
             },
@@ -128,7 +125,7 @@ describe('applyMutation', () => {
 
         expect(result).toEqual({
             a: 2,
-            b: 'HELLO',
+            b: 'asd',
             c: false,
         });
     });
