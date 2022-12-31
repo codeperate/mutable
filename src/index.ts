@@ -76,12 +76,3 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     if (option.top && result == deleteValue) result = undefined;
     return result;
 }
-
-type Testing = {
-    asdf: {
-        asd: { b: number } | (() => { b: number });
-    };
-};
-let x: Mutable<Testing>;
-x.asdf.asd;
-applyMutation([], x);
