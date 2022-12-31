@@ -66,6 +66,7 @@ export function applyMutation<T extends Mutable<T>>(
         }
     }
     for (const [key, value] of Object.entries(result)) {
+        if (key == 'mutate') continue;
         if (value && typeof value == 'object' && value.constructor.name === 'Object') {
             result[key] = applyMutation(conditions, value as any, { ...option, top: false });
         }
