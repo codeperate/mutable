@@ -9,7 +9,7 @@ export type NonMutable<T extends object> = {
     [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? NonMutable<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key];
 };
 export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? Mutable<Exclude<T[Key], Function>, K> | Extract<T[Key], Function> : T[Key] } & {
-    mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, ...args: any) => DeepPartial<T>) };
+    mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, ...args: any) => any) };
 };
 export type Mutated<T extends object, K = any> =
     | {

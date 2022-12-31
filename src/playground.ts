@@ -5,8 +5,7 @@ const obj = {
     b: 2,
     c: 3,
     mutate: {
-        condition1: { b: 4 },
-        condition2: { c: deleteValue },
+        condition1: () => ({ asdL: 1 }),
     },
 };
 
