@@ -6,13 +6,13 @@ export type DeepPartial<T> = T extends Function
       }
     : T;
 export type NonMutable<T extends object> = {
-    [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? (T[Key] extends Function ? T[Key] : NonMutable<T[Key]>) : T[Key];
+    [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? NonMutable<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key];
 };
-export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? (T[Key] extends Function ? T[Key] : Mutable<T[Key], K>) : T[Key] } & {
+export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? Mutable<Exclude<T[Key], Function>, K> | Extract<T[Key], Function> : T[Key] } & {
     mutate?: { [key: string]: DeepPartial<Mutated<T, K>> };
 };
 export type Mutated<T extends object, K = any> = {
-    [Key in keyof T]: (T[Key] extends object ? Mutated<T[Key]> : T[Key]) | ((this: K, obj: T, ...args: any) => T) | symbol;
+    [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key]) | ((this: K, obj: T, ...args: any) => T) | symbol;
 };
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
@@ -72,3 +72,9 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     // Return the result
     return result;
 }
+type Union = {
+    a: () => { b: number };
+};
+let a: Mutable<Union> = {
+    a: null,
+};
