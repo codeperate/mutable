@@ -11,9 +11,13 @@ export type NonMutable<T extends object> = {
 export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? Mutable<Exclude<T[Key], Function>, K> | Extract<T[Key], Function> : T[Key] } & {
     mutate?: { [key: string]: DeepPartial<Mutated<T, K>> };
 };
-export type Mutated<T extends object, K = any> = {
-    [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key]) | ((this: K, obj: T, ...args: any) => T) | symbol;
-};
+export type Mutated<T extends object, K = any> =
+    | {
+          [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key]) | ((this: K, obj: T, ...args: any) => T) | symbol;
+      }
+    | ((this: K, obj: T, ...args: any) => T)
+    | symbol;
+
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
 export function applyMutation<T extends Mutable<NonMutable<T>>>(
@@ -34,7 +38,8 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     // whether or not they have a `mutate` property
     for (const [key, value] of Object.entries(result)) {
         if (value && typeof value == 'object' && Array.isArray(value) == false) {
-            result[key] = applyMutation(conditions, value as any, option);
+            result[key] = applyMutation(conditions, value as any, { ...option });
+            if (result[key] == deleteValue) delete result[key];
         }
     }
 
@@ -47,8 +52,11 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
             conditionKey = condition.condition;
             args = condition.args();
         } else conditionKey = condition;
-        const mutation = obj.mutate?.[conditionKey];
-        if (mutation) {
+        const mutation = obj?.mutate?.[conditionKey];
+        if (mutation === deleteValue) return deleteValue;
+        else if (typeof mutation == 'function') {
+            return mutation.bind(this)(result, ...(Array.isArray(args) ? args : [args]));
+        } else if (mutation) {
             for (const [key, value] of Object.entries(mutation)) {
                 if (value === deleteValue) {
                     delete result[key];

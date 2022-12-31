@@ -1,11 +1,9 @@
-import { applyMutation } from './index';
+import { applyMutation, deleteValue } from './index';
 let obj = {
     properties: {
         name: {
             mutate: {
-                edit: {
-                    hidden: true,
-                },
+                edit: () => ({ label: 'Name' }),
             },
         },
         number: {
@@ -26,5 +24,5 @@ let obj = {
         },
     },
 };
-let result = applyMutation(['edit'], obj);
+let result = applyMutation(['edit'], obj as any);
 console.log(JSON.stringify(result, null, 2));
