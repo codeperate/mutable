@@ -32,6 +32,7 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
     // Create the `deleteValue` symbol
 
     // Start with a shallow copy of the original object
+
     let result = { ...obj };
 
     // Recursively apply the mutation to all properties of the object, regardless of
