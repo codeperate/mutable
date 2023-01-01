@@ -1,6 +1,6 @@
 {
     "name": "@codeperate/mutable",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "description": "A small library that provide utility tools.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
