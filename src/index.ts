@@ -50,7 +50,7 @@ export function applyMutation<T extends Mutable<T>>(
         for (const mutateKey of Object.keys(result.mutate)) {
             const matchCondition = conditions.find((c) => (typeof c == 'string' ? c : c.condition) == mutateKey);
             if (matchCondition) {
-                const mutation = result.mutate[mutateKey];
+                const mutation = lastObjResult.mutate[mutateKey];
                 if (mutation === deleteValue) {
                     result = deleteValue;
                 } else if (typeof mutation == 'function') {
