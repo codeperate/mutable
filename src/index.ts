@@ -20,18 +20,19 @@ export type Mutated<T extends object, K = any> =
 
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
-function deepAssign(currentObj: Record<any, any>, newObj: Record<any, any>) {
+export function deepAssign(currentObj: Record<any, any>, newObj: Record<any, any>) {
+    let _newObj = { ...newObj };
     if (!newObj) return currentObj;
-    for (const [key, value] of Object.entries(newObj)) {
+    for (const [key, value] of Object.entries(_newObj)) {
         if (!currentObj[key]) {
             continue;
         }
 
         if (typeof value == 'object' && value && value.constructor.name === 'Object') {
-            newObj[key] = deepAssign(currentObj[key], newObj[key]);
+            _newObj[key] = deepAssign(currentObj[key], _newObj[key]);
         }
     }
-    return { ...currentObj, ...newObj };
+    return { ...currentObj, ..._newObj };
 }
 export function applyMutation<T extends Mutable<T>>(
     conditions: MutableCondition[],
