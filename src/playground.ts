@@ -1,28 +1,24 @@
-import { applyMutation, deleteValue } from './index';
-let obj = {
-    properties: {
-        name: {
-            mutate: {
-                edit: () => ({ label: 'Name' }),
-            },
+import { applyMutation, deepAssign, deleteValue } from './index';
+
+const obj = {
+    a: 1,
+    b: 2,
+    collection: {
+        fields: {
+            d: 1,
+            f: 2,
         },
-        number: {
-            items: {
-                config: {},
-            },
-        },
-        test: {
-            config: {
-                entity: 'test',
-            },
-        },
-        tests: {
-            config: {
-                entity: 'test',
-                multi: true,
-            },
+    },
+    mutate: {
+        collection: {
+            collection: { fields: { g: 1, d: null } },
         },
     },
 };
-let result = applyMutation(['edit'], obj as any);
-console.log(JSON.stringify(result, null, 2));
+
+// Calculate the expected mutation result
+const expected = { a: 1, b: 4 };
+
+const _obj = applyMutation<any>(['collection'], deepAssign(obj, { mutate: { collection: { collection: { fields: { k: 3 } } } } }));
+console.log(JSON.stringify(_obj, null, 2));
+console.log(JSON.stringify(obj, null, 2));
