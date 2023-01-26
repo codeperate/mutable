@@ -6,76 +6,76 @@ export type DeepPartial<T> = T extends Function
       }
     : T;
 export type NonMutable<T extends object> = {
-    [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? (T[Key] extends Function ? T[Key] : NonMutable<T[Key]>) : T[Key];
+    [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? NonMutable<ObjectOnly<T>> | Exclude<T[Key], ObjectOnly<T>> : T[Key];
 };
-export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? (T[Key] extends Function ? T[Key] : Mutable<T[Key], K>) : T[Key] } & {
-    mutate?: { [key: string]: DeepPartial<Mutated<T, K>> };
+export type ObjectOnly<T> = T extends object ? (T extends [] ? (T extends Function ? never : T) : never) : never;
+export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? Mutable<ObjectOnly<T>, K> | Exclude<T[Key], ObjectOnly<T>> : T[Key] } & {
+    mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
 };
 export type Mutated<T extends object, K = any> =
     | {
-          [Key in keyof T]: T[Key] extends object ? Mutated<T[Key]> : T[Key] | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => T) | symbol;
+          [Key in keyof T]: T[Key] extends object ? Mutated<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key] | symbol;
       }
-    | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => T)
     | symbol;
+
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
-export function applyMutation<T extends Mutable<NonMutable<T>>>(
+export function deepAssign(currentObj: Record<any, any>, newObj: Record<any, any>) {
+    let _newObj = { ...newObj };
+    if (!newObj) return currentObj;
+    for (const [key, value] of Object.entries(_newObj)) {
+        if (!currentObj[key]) {
+            continue;
+        }
+
+        if (typeof value == 'object' && value && value.constructor.name === 'Object') {
+            _newObj[key] = deepAssign(currentObj[key], _newObj[key]);
+        }
+    }
+    return { ...currentObj, ..._newObj };
+}
+export function applyMutation<T extends Mutable<T>>(
     conditions: MutableCondition[],
     obj: T,
     option: {
         keepMutation?: boolean;
-    } = {},
+        top?: boolean;
+    } = { top: true },
 ) {
     const defaultOption = { keepMutation: false };
     Object.assign(defaultOption, option);
-    // Create the `deleteValue` symbol
-
-    // Start with a shallow copy of the original object
-    let result = { ...obj };
-
-    // Recursively apply the mutation to all properties of the object, regardless of
-    // whether or not they have a `mutate` property
-    for (const [key, value] of Object.entries(result)) {
-        if (value && typeof value == 'object' && Array.isArray(value) == false) {
-            result[key] = applyMutation(conditions, value as any, { ...option });
-            if (result[key] == deleteValue) delete result[key];
-        }
-    }
-
-    // Iterate over the list of conditions and apply the corresponding mutation
-    // to the result object
-    for (const condition of conditions) {
-        let conditionKey: string;
-        let args;
-        if (typeof condition != 'string') {
-            conditionKey = condition.condition;
-            args = condition.args();
-        } else conditionKey = condition;
-        const mutation = obj?.mutate?.[conditionKey];
-        if (mutation === deleteValue) return deleteValue;
-        else if (typeof mutation == 'function') {
-            return mutation.bind(this)(result, conditions, ...(Array.isArray(args) ? args : [args]));
-        } else if (mutation) {
-            for (const [key, value] of Object.entries(mutation)) {
-                if (value === deleteValue) {
-                    delete result[key];
-                } else if (typeof value == 'function') {
-                    result[key] = value.bind(this)(result[key], conditions, ...(Array.isArray(args) ? args : [args]));
+    let result: any = { ...obj };
+    let lastObjResult = result;
+    if (result.mutate) {
+        for (const mutateKey of Object.keys(result.mutate)) {
+            const matchCondition = conditions.find((c) => (typeof c == 'string' ? c : c.condition) == mutateKey);
+            if (matchCondition) {
+                const mutation = lastObjResult.mutate[mutateKey];
+                if (mutation === deleteValue) {
+                    result = deleteValue;
+                } else if (typeof mutation == 'function') {
+                    let args;
+                    if (typeof matchCondition != 'string') {
+                        args = matchCondition.args();
+                    }
+                    result = mutation.bind(this)(result, conditions, ...(Array.isArray(args) ? args : [args]));
                 } else {
-                    result[key] = value;
+                    result = deepAssign(lastObjResult, mutation);
                 }
+                if (result && typeof result == 'object') lastObjResult = result;
             }
         }
     }
-
-    // Remove any remaining `mutate` properties from the result
+    for (const [key, value] of Object.entries(result)) {
+        if (key == 'mutate') continue;
+        if (value && typeof value == 'object' && value.constructor.name === 'Object') {
+            result[key] = applyMutation(conditions, value as any, { ...option, top: false });
+        }
+        if (result[key] == deleteValue) delete result[key];
+    }
     if (!option.keepMutation) {
-        for (const [key, value] of Object.entries(result)) {
-            if (key === 'mutate') {
-                delete result[key];
-            }
-        }
+        if (typeof result == 'object' && 'mutate' in result) delete result['mutate'];
     }
-    // Return the result
+    if (option.top && result == deleteValue) result = undefined;
     return result;
 }
