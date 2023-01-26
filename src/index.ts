@@ -13,9 +13,9 @@ export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key
 };
 export type Mutated<T extends object, K = any> =
     | {
-          [Key in keyof T]: T[Key] extends object ? Mutated<T[Key]> : T[Key] | ((this: K, obj: T, ...args: any) => T) | symbol;
+          [Key in keyof T]: T[Key] extends object ? Mutated<T[Key]> : T[Key] | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => T) | symbol;
       }
-    | ((this: K, obj: T, ...args: any) => T)
+    | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => T)
     | symbol;
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
@@ -54,13 +54,13 @@ export function applyMutation<T extends Mutable<NonMutable<T>>>(
         const mutation = obj?.mutate?.[conditionKey];
         if (mutation === deleteValue) return deleteValue;
         else if (typeof mutation == 'function') {
-            return mutation.bind(this)(result, ...(Array.isArray(args) ? args : [args]));
+            return mutation.bind(this)(result, conditions, ...(Array.isArray(args) ? args : [args]));
         } else if (mutation) {
             for (const [key, value] of Object.entries(mutation)) {
                 if (value === deleteValue) {
                     delete result[key];
                 } else if (typeof value == 'function') {
-                    result[key] = value.bind(this)(result[key], ...(Array.isArray(args) ? args : [args]));
+                    result[key] = value.bind(this)(result[key], conditions, ...(Array.isArray(args) ? args : [args]));
                 } else {
                     result[key] = value;
                 }
