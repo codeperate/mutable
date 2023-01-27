@@ -10,12 +10,12 @@ export type NonMutable<T extends object> = {
 };
 export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never : T extends CallableFunction ? never : T) : never;
 
-export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> : T[Key] } & {
+export type Mutable<T extends object = any, K = any> = { [Key in keyof T]: Key extends 'mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> : T[Key] } & {
     mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
 };
 export type Mutated<T extends object, K = any> =
     | {
-          [Key in keyof T]: T[Key] extends object ? Mutated<Exclude<T[Key], Function>> | Extract<T[Key], Function> : T[Key] | symbol;
+          [Key in keyof T]: T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key] | symbol;
       }
     | symbol;
 
@@ -35,7 +35,7 @@ export function deepAssign(currentObj: Record<any, any>, newObj: Record<any, any
     }
     return { ...currentObj, ..._newObj };
 }
-export function applyMutation<T extends Mutable<T>>(
+export function applyMutation<T extends object>(
     conditions: MutableCondition[],
     obj: T,
     option: {
@@ -80,3 +80,6 @@ export function applyMutation<T extends Mutable<T>>(
     if (option.top && result == deleteValue) result = undefined;
     return result;
 }
+let a: Mutable<{ a: (() => { b: number }) | { b: number } }>;
+a = { a: { b: 6, mutate: { test: () => {} } } };
+applyMutation(['asd'], a);
