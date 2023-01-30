@@ -11,7 +11,7 @@ export type NonMutable<T extends object> = {
 export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never : T extends CallableFunction ? never : T) : never;
 
 export type Mutable<T extends object = any, K = any> = {
-    [Key in keyof T]: Key extends 'mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]> | Exclude<T[Key], ObjectOnly<T[Key]>>, K> : T[Key];
+    [Key in keyof T]: Key extends 'mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
 } & {
     mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
 };
