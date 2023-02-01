@@ -82,6 +82,3 @@ export function applyMutation<T extends object>(
     if (option.top && result == deleteValue) result = undefined;
     return result;
 }
-let a: Mutable<{ a: (() => { b: number }) | { b: number } }>;
-a = { a: { b: 6, mutate: { test: () => {} } } };
-applyMutation(['asd'], a);
