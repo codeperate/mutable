@@ -72,7 +72,7 @@ export function applyMutation<T extends object>(
     for (const [key, value] of Object.entries(result)) {
         if (key == 'mutate') continue;
         if (value && typeof value == 'object' && value.constructor.name === 'Object') {
-            result[key] = applyMutation(conditions, value as any, { ...option, top: false });
+            result[key] = applyMutation.bind(this)(conditions, value as any, { ...option, top: false });
         }
         if (result[key] == deleteValue) delete result[key];
     }
