@@ -59,7 +59,7 @@ export function applyMutation<T extends object>(
                 } else if (typeof mutation == 'function') {
                     let args;
                     if (typeof matchCondition != 'string') {
-                        args = matchCondition.args();
+                        args = matchCondition.args.bind(this)();
                     }
                     result = mutation.bind(this)(result, conditions, ...(Array.isArray(args) ? args : [args]));
                 } else {
