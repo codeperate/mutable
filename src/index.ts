@@ -1,3 +1,5 @@
+import { Condition, isMatchCondition } from './match-condition';
+
 export type DeepPartial<T> = T extends Function
     ? T
     : T extends object
@@ -6,15 +8,22 @@ export type DeepPartial<T> = T extends Function
       }
     : T;
 export type NonMutable<T extends object> = {
-    [Key in keyof Omit<T, 'mutate'>]: T[Key] extends object ? NonMutable<ObjectOnly<T>> | Exclude<T[Key], ObjectOnly<T>> : T[Key];
+    [Key in keyof Omit<T, '$mutate'>]: T[Key] extends object ? NonMutable<ObjectOnly<T>> | Exclude<T[Key], ObjectOnly<T>> : T[Key];
 };
 export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never : T extends CallableFunction ? never : T) : never;
 
+// export type Mutable<T extends object = any, K = any> = {
+//     [Key in keyof T]: Key extends '$mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
+// } & {
+//     $mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
+// };
+
 export type Mutable<T extends object = any, K = any> = {
-    [Key in keyof T]: Key extends 'mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
+    [Key in keyof T]: Key extends '$mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
 } & {
-    mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
+    $mutate?: { cond: Condition; mutation: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
 };
+
 export type Mutated<T extends object, K = any> =
     | {
           [Key in keyof T]: T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key] | symbol;
@@ -43,25 +52,27 @@ export function applyMutation<T extends object>(
     option: {
         keepMutation?: boolean;
         top?: boolean;
-    } = { top: true },
+    } = {},
 ) {
-    const defaultOption = { keepMutation: false };
+    const defaultOption = { keepMutation: false, top: true };
     Object.assign(defaultOption, option);
     let result: any = { ...obj };
     let lastObjResult = result;
-    if (result.mutate) {
-        for (const mutateKey of Object.keys(result.mutate)) {
-            const matchCondition = conditions.find((c) => (typeof c == 'string' ? c : c.condition) == mutateKey);
-            if (matchCondition) {
-                const mutation = lastObjResult.mutate[mutateKey];
+    if (result.$mutate) {
+        for (let i = 0; i < result.$mutate.length; i++) {
+            const mutateObj = result.$mutate[i];
+            const { cond } = mutateObj;
+            if (
+                isMatchCondition(
+                    conditions.map((c) => (typeof c == 'object' ? c.condition : c)),
+                    cond,
+                )
+            ) {
+                const mutation = lastObjResult.$mutate[i]['mutation'];
                 if (mutation === deleteValue) {
                     result = deleteValue;
                 } else if (typeof mutation == 'function') {
-                    let args;
-                    if (typeof matchCondition != 'string') {
-                        args = matchCondition.args.bind(this)();
-                    }
-                    result = mutation.bind(this)(result, conditions, ...(Array.isArray(args) ? args : [args]));
+                    result = mutation.bind(this)(result, { conditions });
                 } else {
                     result = deepAssign(lastObjResult, mutation);
                 }
@@ -70,14 +81,14 @@ export function applyMutation<T extends object>(
         }
     }
     for (const [key, value] of Object.entries(result)) {
-        if (key == 'mutate') continue;
+        if (key == '$mutate') continue;
         if (value && typeof value == 'object' && value.constructor.name === 'Object') {
             result[key] = applyMutation.bind(this)(conditions, value as any, { ...option, top: false });
         }
         if (result[key] == deleteValue) delete result[key];
     }
     if (!option.keepMutation) {
-        if (typeof result == 'object' && 'mutate' in result) delete result['mutate'];
+        if (typeof result == 'object' && '$mutate' in result) delete result['$mutate'];
     }
     if (option.top && result == deleteValue) result = undefined;
     return result;
