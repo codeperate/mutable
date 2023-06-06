@@ -9,7 +9,7 @@
     ],
     "scripts": {
         "build": "del-cli dist && tsc -p tsconfig.build.json",
-        "release": "pnpm run build && np --no-cleanup",
+        "release": "pnpm run build && np --no-cleanup --any-branch",
         "test": "jest",
         "develop:test": "jest --watchAll",
         "playground": "ts-node src/playground.ts"
