@@ -21,14 +21,13 @@ export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never
 export type Mutable<T extends object = any, K = any> = {
     [Key in keyof T]: Key extends '$mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
 } & {
-    $mutate?: { cond: Condition; mutation: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
+    $mutate?: { cond: Condition; mutation: DeepPartial<Mutated<T>> | symbol | ((this: K, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
 };
 
-export type Mutated<T extends object, K = any> =
+export type Mutated<T extends object> =
     | {
-          [Key in keyof T]: T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key] | symbol;
-      }
-    | symbol;
+          [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key]) | symbol;
+      };
 
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
