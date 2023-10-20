@@ -1,74 +1,93 @@
-# `applyMutation`
+# Mutable Library
 
-A function for applying a series of mutations to an object without modifying the original object.
+Mutable is a JavaScript library that provides a set of utility functions and types for working with mutable and condition-based object mutations. It offers a flexible and extensible way to apply mutations to objects based on specified conditions, making it easier to manage and modify complex data structures.
 
 ## Installation
 
-To install `applyMutation` from npm, run the following command:
+You can install Mutable using npm:
 
-`npm install apply-mutation`
+```bash
+npm install @codeperate/mutable
+```
+
+## Features
+
+Mutable offers the following features:
+
+### 1. `Mutable` Type
+
+The `Mutable` type allows you to define objects with mutable properties. It can specify conditions and mutations to apply to the object.
+
+```typescript
+type Mutable<T extends object = any, K = any> = {
+    [Key in keyof T]: Key extends '$mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
+} & {
+    $mutate?: { cond: Condition; key?: string; mutation: DeepPartial<Mutated<T>> | symbol | ((this: K, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
+};
+```
+
+### 2. `DeepPartial` Type
+
+The `DeepPartial` type allows you to create a deep partial copy of an object, preserving the object's structure while making selected properties optional.
+
+```typescript
+type DeepPartial<T> = T extends Function
+    ? T
+    : T extends object
+    ? {
+          [P in keyof T]?: DeepPartial<T[P]>;
+      }
+    : T;
+```
+
+### 3. `applyMutation` Function
+
+The `applyMutation` function is used to apply mutations to an object based on specified conditions. It supports deep object merging and provides options to control the mutation process.
+
+### 4. Conditional Mutations
+
+MutateJS supports conditional mutations, allowing you to define conditions that determine whether a mutation should be applied to an object.
+
+### 5. `Condition` Type and `isMatchCondition` Function
+
+The `Condition` type allows you to define conditions using logical operators such as `$and`, `$or`, and `$not`. The `isMatchCondition` function checks if an array of conditions matches a given condition.
 
 ## Usage
 
-To use `applyMutation`, import it from the `apply-mutation` module like this:
+Here's a quick example of how to use MutateJS:
 
-`import { applyMutation, deleteValue } from 'apply-mutation';`
+```typescript
+import { applyMutation, Condition, isMatchCondition, Mutable, MutableCondition, deleteValue } from 'mutatejs';
 
-The `applyMutation` function takes two arguments:
-
-1. An array of condition strings, representing the list of mutations to apply to the object.
-2. An object that implements the `Mutable` interface, representing the object to be mutated.
-
-Here is an example of how to use `applyMutation`:
-
-```ts
-// Define the object to mutate
-const obj = {
-    a: 1,
-    b: 2,
-    c: 3,
-    mutate: {
-        condition1: { b: 4 },
-        condition2: { c: deleteValue },
-    },
-};
-
-// Apply the mutation to the object
-const result = applyMutation(['condition1', 'condition2'], obj);
-
-// The result should be { a: 1, b: 4 }
-```
-
-## Advanced Usage
-
-The `applyMutation` function is designed to handle nested objects and to apply mutations to all properties of the object, regardless of whether or not they have a `mutate` property. This allows you to create complex mutations that span multiple levels of the object hierarchy.
-
-Here is an example of how to use `applyMutation` with a nested object:
-
-```ts
-// Define the object to mutate
-const obj = {
-    a: 1,
-    b: {
-        c: 2,
-        d: 3,
-        mutate: {
-            condition1: { c: 4 },
-            condition2: { d: deleteValue },
+// Define your data structure
+const data: Mutable<MyData> = {
+    name: 'John',
+    age: 30,
+    $mutate: [
+        {
+            cond: 'nameEqualsAlice',
+            mutation: {
+                name: 'Alice',
+            },
         },
-    },
+    ],
 };
 
-// Apply the mutation to the object
-const result = applyMutation(['condition1', 'condition2'], obj);
+// Define conditions
+const conditions: MutableCondition[] = ['nameEqualsAlice'];
 
-// The result should be { a: 1, b: { c: 4 } }
+// Apply mutations based on conditions
+const mutatedData = applyMutation(conditions, data);
+
+console.log(mutatedData);
 ```
 
-# License
+In this example, we defined a mutable object `data` with a condition-based mutation. We then used the `applyMutation` function to apply mutations based on specified conditions.
 
-# MIT
+## About
 
-# Author
+Mutable is developed and maintained by Mathew and is hosted on GitHub.
 
-# Assistant (a large language model trained by OpenAI)
+---
+
+Thank you for using Mutable! We hope it simplifies your object mutation needs and enhances your JavaScript projects. If you have any feedback or suggestions, please let us know.
