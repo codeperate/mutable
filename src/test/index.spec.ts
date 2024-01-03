@@ -175,3 +175,24 @@ describe('apply nested condition', () => {
         });
     });
 });
+
+describe('delete value', () => {
+    it('should apply mutation', () => {
+        const obj = {
+            a: 1,
+            b: 'hello',
+            c: true,
+            $mutate: [{ cond: { $and: ['condition1', 'condition2'] }, mutation: { a: deleteValue } }],
+            d: {
+                $mutate: [{ cond: { $and: ['condition1', 'condition2'] }, mutation: deleteValue }],
+            },
+        };
+
+        const result = applyMutation(['condition1', 'condition2'], obj);
+
+        expect(result).toEqual({
+            b: 'hello',
+            c: true,
+        });
+    });
+});

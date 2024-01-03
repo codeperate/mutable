@@ -70,6 +70,7 @@ export function applyMutation<T extends object>(
                 const mutation = lastObjResult.$mutate[i]['mutation'];
                 if (mutation === deleteValue) {
                     result = deleteValue;
+                    break;
                 } else if (typeof mutation == 'function') {
                     result = mutation.bind(this)(result, { conditions });
                 } else {
