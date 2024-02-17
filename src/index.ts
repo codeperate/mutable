@@ -45,7 +45,8 @@ export function deepAssign(currentObj: Record<any, any>, newObj: Record<any, any
     }
     return { ...currentObj, ..._newObj };
 }
-export function applyMutation<T extends object>(
+export function applyMutation<T extends object = any, C = any>(
+    this: C,
     conditions: MutableCondition[],
     obj: T,
     option: {
