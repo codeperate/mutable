@@ -1,4 +1,4 @@
-import { applyMutation, deepAssign, deleteValue } from './index';
+import { Mutable, applyMutation, deepAssign, deleteValue } from './index';
 import { isMatchCondition } from './match-condition';
 
 const obj = {
