@@ -18,10 +18,10 @@ export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never
 //     $mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
 // };
 
-export type Mutable<T extends object = any, K = any> = {
-    [Key in keyof T]: Key extends '$mutate' ? T[Key] : T[Key] extends object ? Mutable<ObjectOnly<T[Key]>, K> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
+export type Mutable<T extends object = any> = {
+    [Key in keyof T]: Key extends '$mutate' ? T[Key] : Exclude<T[Key], undefined> extends object ? Mutable<ObjectOnly<T[Key]>> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
 } & {
-    $mutate?: { cond: Condition; key?: string; mutation: DeepPartial<Mutated<T>> | symbol | ((this: K, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
+    $mutate?: { cond: Condition; key?: string; mutation: DeepPartial<Mutated<T>> | symbol | ((this: any, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
 };
 
 export type Mutated<T extends object> =
@@ -84,7 +84,7 @@ export function applyMutation<T extends object = any, C = any>(
     for (const [key, value] of Object.entries(result)) {
         if (key == '$mutate') continue;
         if (value && typeof value == 'object' && value.constructor.name === 'Object') {
-            result[key] = applyMutation.bind(this)(conditions, value as any, { ...option, top: false });
+            result[key] = applyMutation.bind(this)(conditions, value, { ...option, top: false });
         }
         if (result[key] == deleteValue) delete result[key];
     }
