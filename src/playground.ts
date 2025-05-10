@@ -1,4 +1,4 @@
-import { Mutable, applyMutation, deleteValue } from './index';
+import { DeepPartial, Immutable, Mutable, applyMutation, deleteValue } from './index';
 
 const obj = {
     a: 1,
@@ -20,16 +20,24 @@ interface A {
     a?: string;
     b?: string;
     c?: string;
-    d?: {
+    d?: Immutable<{
         e?: string;
         f?: {
             g?: string;
         };
-    };
+    }>;
 }
-type DeepPartial<T> = {
-    [P in keyof T]?: T[P] extends object ? (T[P] extends Function ? T[P] : DeepPartial<T[P]>) : T[P];
-};
+
+function test4(a: Mutable<A>) { }
+test4({
+    a: 'a',
+    $mutate: [{ cond: 'test', mutation: { a: 'b' } }],
+    d: {
+        e: "",
+
+    }
+
+})
 export interface DefaultEntityConfig extends Omit<EntityConfig, 'title' | 'description' | 'dataViewer' | 'form' | 'name'> {
     dataViewer: Omit<EntityDataViewer, 'fields'>;
 }
@@ -38,9 +46,9 @@ type WithDefault<T, U> = {
     [K in keyof T & keyof U]?: T[K] extends object ? WithDefault<T[K], U[K]> : T[K];
 } & { [K in Exclude<keyof T, keyof U>]: T[K] };
 
-function test(a: Mutable<WithDefault<EntityConfig, DefaultEntityConfig>>) {}
-function test2(a: WithDefault<EntityConfig, DefaultEntityConfig>) {}
-function test3(a: Mutable<DeepPartial<EntityConfig>>) {}
+function test(a: Mutable<WithDefault<EntityConfig, DefaultEntityConfig>>) { }
+function test2(a: WithDefault<EntityConfig, DefaultEntityConfig>) { }
+function test3(a: Mutable<DeepPartial<EntityConfig>>) { }
 test3({
     name: 'test',
     title: 'test',
@@ -54,12 +62,12 @@ test3({
     form: {},
     requests: { $mutate: [{ cond: 'test', mutation: {} }] },
 });
-interface FormSchema {}
-interface EntityDataViewer {}
-interface Component {}
-interface EntityEditContext {}
-interface OrderByState {}
-interface EntityContext {}
+interface FormSchema { }
+interface EntityDataViewer { }
+interface Component { }
+interface EntityEditContext { }
+interface OrderByState { }
+interface EntityContext { }
 export interface EntityConfig {
     name: string;
     title: string;

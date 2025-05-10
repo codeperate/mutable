@@ -4,8 +4,8 @@ export type DeepPartial<T> = T extends Function
     ? T
     : T extends object
     ? {
-          [P in keyof T]?: DeepPartial<T[P]>;
-      }
+        [P in keyof T]?: DeepPartial<T[P]>;
+    }
     : T;
 export type NonMutable<T extends object> = {
     [Key in keyof Omit<T, '$mutate'>]: T[Key] extends object ? NonMutable<ObjectOnly<T>> | Exclude<T[Key], ObjectOnly<T>> : T[Key];
@@ -18,7 +18,10 @@ export type ObjectOnly<T> = T extends object ? (T extends Array<infer U> ? never
 //     $mutate?: { [key: string]: DeepPartial<Mutated<T, K>> | ((this: K, obj: T, conditions: MutableCondition[], ...args: any) => any) };
 // };
 
-export type Mutable<T extends object = any> = {
+export type Immutable<T> = { readonly __Immutable: unique symbol } & T;
+export type UnwrapImmutable<T> = T extends Immutable<infer U> ? U : T;
+
+export type Mutable<T extends object = any> = T extends Immutable<T> ? UnwrapImmutable<T> : {
     [Key in keyof T]: Key extends '$mutate' ? T[Key] : NonNullable<T[Key]> extends object ? Mutable<ObjectOnly<T[Key]>> | Exclude<T[Key], ObjectOnly<T[Key]>> : T[Key];
 } & {
     $mutate?: { cond: Condition; key?: string; mutation: DeepPartial<Mutated<T>> | symbol | ((this: any, obj: T, extra: { conditions: MutableCondition[] }) => any) }[];
@@ -32,8 +35,8 @@ export type MutableAny<T extends object = any> = {
 
 export type Mutated<T extends object> =
     | {
-          [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key]) | symbol;
-      };
+        [Key in keyof T]: (T[Key] extends object ? Mutated<Exclude<T[Key], CallableFunction>> | Extract<T[Key], CallableFunction> : T[Key]) | symbol;
+    };
 
 export type MutableCondition = string | { condition: string; args?: () => any | any[] };
 export const deleteValue = Symbol('deleteValue');
